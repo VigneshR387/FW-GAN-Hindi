@@ -5,7 +5,7 @@ This repository contains the reference code and dataset for the paper:
 **[FW-GAN: Frequency-Driven Handwriting Synthesis with Wave-Modulated MLP Generator](https://arxiv.org/abs/2508.21040)**  
 Huynh Tong Dang Khoa, Dang Hoai Nam, Vo Nguyen Le Duy
 
-![test](https://github.com/DAIR-Group/FW-GAN/blob/main/docs/architecture.png?raw=true#gh-dark-mode-only)
+![test](https://github.com/DAIR-Group/FW-GAN/blob/main/docs/architecture.png?raw=true#)
 
 ## Installation
 
@@ -36,12 +36,12 @@ python generate.py --config ./configs/fw_gan_iam.yml
 
 ## Handwriting synthesis and reconstruction results on IAM dataset
 
-![test](https://github.com/DAIR-Group/FW-GAN/blob/main/docs/Visualization_gen.png?raw=true#gh-dark-mode-only)
+![test](https://github.com/DAIR-Group/FW-GAN/blob/main/docs/Visualization_gen.png?raw=true#)
 
-![test](https://github.com/DAIR-Group/FW-GAN/blob/main/docs/Visualization_reconstruction.png?raw=true#gh-dark-mode-only)
+![test](https://github.com/DAIR-Group/FW-GAN/blob/main/docs/Visualization_reconstruction.png?raw=true#)
 
 ## Handwriting synthesis on HANDS-VNOnDB dataset
-![test](https://github.com/DAIR-Group/FW-GAN/blob/main/docs/Visualization_Vietnamese.png?raw=true#gh-dark-mode-only)
+![test](https://github.com/DAIR-Group/FW-GAN/blob/main/docs/Visualization_Vietnamese.png?raw=true#)
 
 ### Implementation details
 This work is partially based on the code released for [HiGAN](https://github.com/ganji15/HiGAN)
