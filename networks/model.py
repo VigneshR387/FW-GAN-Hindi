@@ -199,7 +199,7 @@ class AdversarialModel(BaseModel):
             G=torch.optim.Adam(chain(self.models.G.parameters(), self.models.E.parameters()),
                                lr=opt.training.lr, betas=(opt.training.adam_b1, opt.training.adam_b2)),
             D=torch.optim.Adam(
-                chain(self.models.D.parameters(), self.models.R.parameters(), self.models.W.parameters(), self.models.S.parameters()),
+                chain(self.models.D.parameters(), self.models.HF_D.parameters(), self.models.R.parameters(), self.models.W.parameters(), self.models.S.parameters()),
                 lr=opt.training.lr, betas=(opt.training.adam_b1, opt.training.adam_b2)),
         )
 
