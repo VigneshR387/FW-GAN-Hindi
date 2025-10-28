@@ -50,12 +50,13 @@ This work is partially based on the code released for [HiGAN](https://github.com
 If you find this work useful, please cite our paper:
 
 ```bibtex
-@misc{khoa2025fwganfrequencydrivenhandwritingsynthesis,
-      title={FW-GAN: Frequency-Driven Handwriting Synthesis with Wave-Modulated MLP Generator}, 
-      author={Huynh Tong Dang Khoa and Dang Hoai Nam and Vo Nguyen Le Duy},
-      year={2025},
-      eprint={2508.21040},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2508.21040}, 
+@article{TONG2025130175,
+  title = {FW-GAN: Frequency-Driven Handwriting Synthesis with Wave-Modulated MLP Generator},
+  journal = {Expert Systems with Applications},
+  pages = {130175},
+  year = {2025},
+  issn = {0957-4174},
+  doi = {https://doi.org/10.1016/j.eswa.2025.130175},
+  url = {https://www.sciencedirect.com/science/article/pii/S095741742503790X},
+  author = {Huynh Tong Dang Tong and Dang Hoai Nam and Vo Nguyen Le Duy},
 }
