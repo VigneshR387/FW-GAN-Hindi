@@ -17,7 +17,7 @@ git clone https://github.com/DAIR-Group/FW-GAN.git && cd FW-GAN
 pip install -r requirements.txt
 ```
 
-From [this link](https://pixeldrain.com/l/t1jhhxS1) you have to download the files `train.hdf5` and `test.hdf5` and place them into the `data` folder. You can also download our pretrained model `FW-GAN.pth` and place it under `/data/weights/FW-GAN.pth` for evaluation.
+We provide our pretrained model weights and datasets on [Huggingface](https://huggingface.co/DAIR-Group/FW_GAN/tree/main). For training, please download the files the files `train.hdf5` and `test.hdf5` and place them into the `data` folder. For quick evaluation, you can also download the pretrained model `FW-GAN.pth` and place it under `/data/weights/FW-GAN.pth`.
 
 ## Training
 
