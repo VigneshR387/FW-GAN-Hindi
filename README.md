@@ -2,7 +2,7 @@
 
 This repository contains the reference code and dataset for the paper:
 
-**[FW-GAN: Frequency-Driven Handwriting Synthesis with Wave-Modulated MLP Generator](https://authors.elsevier.com/c/1m2y6_LnESZLTk)**  
+**[FW-GAN: Frequency-Driven Handwriting Synthesis with Wave-Modulated MLP Generator](https://www.sciencedirect.com/science/article/pii/S095741742503790X)**  
 Huynh Tong Dang Khoa, Dang Hoai Nam, Vo Nguyen Le Duy
 
 ![test](https://github.com/DAIR-Group/FW-GAN/blob/main/docs/architecture.png?raw=true#)
