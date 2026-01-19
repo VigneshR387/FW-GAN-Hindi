@@ -335,6 +335,9 @@ class AdversarialModel(BaseModel):
                     cat_fake_disc = self.models.D(cat_fake_imgs, cat_fake_img_lens, cat_fake_lb_lens)
                     adv_loss = -torch.mean(cat_fake_disc)
 
+                    hf_fake_disc = self.models.HF_D(cat_fake_imgs, cat_fake_img_lens, cat_fake_lb_lens)
+                    adv_loss_hf = -torch.mean(hf_fake_disc)
+
                     ### CTC Auxiliary loss ###
                     cat_fake_ctc = self.models.R(cat_fake_imgs)
                     cat_fake_ctc_lens = cat_fake_img_lens // ctc_len_scale
@@ -373,7 +376,7 @@ class AdversarialModel(BaseModel):
                     self.averager_meters.update('gp_wid', gp_wid.item())
                     # self.averager_meters.update('gp_fdl', gp_fdl.item())
 
-                    g_loss = (2 * adv_loss +
+                    g_loss = (2 * adv_loss + adv_loss_hf +
                               gp_ctc * fake_ctc_loss +
                               gp_info * info_loss +
                               gp_wid * fake_wid_loss +
@@ -382,6 +385,7 @@ class AdversarialModel(BaseModel):
                     
                     g_loss.backward()
                     self.averager_meters.update('adv_loss', adv_loss.item())
+                    self.averager_meters.update('adv_loss_hf', adv_loss_hf.item())
                     self.averager_meters.update('fake_ctc_loss', fake_ctc_loss.item())
                     self.averager_meters.update('info_loss', info_loss.item())
                     self.averager_meters.update('fake_wid_loss', fake_wid_loss.item())
@@ -392,12 +396,12 @@ class AdversarialModel(BaseModel):
                 if iter_count % self.opt.training.print_iter_val == 0:
                     meter_vals = self.averager_meters.eval_all()
                     self.averager_meters.reset_all()
-                    info = "[%3d|%3d]-[%4d|%4d] G:%.4f D-fake:%.4f D-real:%.4f " \
+                    info = "[%3d|%3d]-[%4d|%4d] G:%.4f G-HF:%.4f D-fake:%.4f D-real:%.4f " \
                             "HF-fake:%.4f HF-real:%.4f CTC-fake:%.4f CTC-real:%.4f " \
                            "Wid-fake:%.4f Wid-real:%.4f Recn-z:%.4f FDL:%.4f Kl:%.4f" \
                            % (epoch, self.opt.training.epochs,
                               iter_count % len(self.train_loader), len(self.train_loader),
-                              meter_vals['adv_loss'],
+                              meter_vals['adv_loss'], meter_vals['adv_loss_hf'],
                               meter_vals['fake_disc_loss'], meter_vals['real_disc_loss'],
                               meter_vals['hf_fake_disc_loss'], meter_vals['hf_real_disc_loss'],
                               meter_vals['fake_ctc_loss'], meter_vals['real_ctc_loss'],
