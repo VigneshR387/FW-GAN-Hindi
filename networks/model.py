@@ -209,7 +209,7 @@ class AdversarialModel(BaseModel):
         )
 
         # Updated to include 'fdl_loss' in averager_meters
-        self.averager_meters = AverageMeterManager(['adv_loss', 'fake_disc_loss',
+        self.averager_meters = AverageMeterManager(['adv_loss', 'adv_loss_hf', 'fake_disc_loss',
                                                     'real_disc_loss', 'hf_fake_disc_loss', 'hf_real_disc_loss', 'info_loss',
                                                     'fake_ctc_loss', 'real_ctc_loss',
                                                     'fake_wid_loss', 'real_wid_loss',
