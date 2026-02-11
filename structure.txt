@@ -1,0 +1,78 @@
+.
+├── configs
+│   ├── fw_gan_hindi.yml
+│   └── fw_gan_iam.yml
+├── data
+│   ├── english_words.txt
+│   ├── hindi_char2idx.json
+│   ├── hindi_char_vocab.txt
+│   └── lexicon.txt
+├── dataset
+│   ├── Count_writer_id.py
+│   ├── test
+│   │   ├── HindiSeg
+│   │   ├── metadata.json
+│   │   └── preprocessing_samples.png
+│   ├── train
+│   │   ├── HindiSeg
+│   │   ├── metadata.json
+│   │   └── preprocessing_samples.png
+│   └── val
+│       ├── HindiSeg
+│       ├── metadata.json
+│       └── preprocessing_samples.png
+├── docs
+│   ├── architecture.png
+│   ├── Visualization_gen.png
+│   ├── Visualization_reconstruction.png
+│   └── Visualization_Vietnamese.png
+├── fid_kid
+│   ├── fid_kid.py
+│   ├── inception.py
+│   ├── __init__.py
+│   └── __pycache__
+│       ├── fid_kid.cpython-311.pyc
+│       └── __init__.cpython-311.pyc
+├── font
+│   └── arial.ttf
+├── Generate_hdf.py
+├── generate.py
+├── lib
+│   ├── alphabet.py
+│   ├── datasets.py
+│   ├── __init__.py
+│   ├── path_config.py
+│   ├── __pycache__
+│   │   ├── alphabet.cpython-311.pyc
+│   │   ├── datasets.cpython-311.pyc
+│   │   ├── __init__.cpython-311.pyc
+│   │   ├── path_config.cpython-311.pyc
+│   │   └── utils.cpython-311.pyc
+│   └── utils.py
+├── LICENSE
+├── networks
+│   ├── BigGAN_layers.py
+│   ├── BigGAN_networks.py
+│   ├── blocks.py
+│   ├── __init__.py
+│   ├── loss.py
+│   ├── model.py
+│   ├── module.py
+│   ├── __pycache__
+│   │   ├── BigGAN_layers.cpython-311.pyc
+│   │   ├── BigGAN_networks.cpython-311.pyc
+│   │   ├── blocks.cpython-311.pyc
+│   │   ├── __init__.cpython-311.pyc
+│   │   ├── loss.cpython-311.pyc
+│   │   ├── model.cpython-311.pyc
+│   │   ├── module.cpython-311.pyc
+│   │   ├── rand_dist.cpython-311.pyc
+│   │   └── utils.cpython-311.pyc
+│   ├── rand_dist.py
+│   └── utils.py
+├── README.md
+├── requirements.txt
+├── structure.txt
+└── train.py
+
+18 directories, 58 files
