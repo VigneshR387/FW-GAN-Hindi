@@ -133,5 +133,5 @@ EncModel:
   init: 'none'
 
 WidModel:
-  n_writer: 339
+  n_writer: 12
   init: 'none'
