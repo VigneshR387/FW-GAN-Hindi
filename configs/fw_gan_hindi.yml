@@ -27,7 +27,7 @@ training:
   ckpt_dir: 'ckpts'
   lexicon: './data/lexicon.txt'
   max_word_len: 25
-  n_class: 81
+  n_class: 117
   capitalize_ratio: 0.0
   sort_input: false
   num_critic_train: 4
@@ -57,7 +57,7 @@ GenModel:
   resolution: 128
   G_kernel_size: 3
   G_attn: '64'
-  n_class: 81
+  n_class: 117
   num_G_SVs: 1
   num_G_SV_itrs: 1
   G_shared: false
@@ -82,7 +82,7 @@ DiscModel:
   resolution: 128
   D_kernel_size: 3
   D_attn: '64'
-  n_class: 81
+  n_class: 117
   num_D_SVs: 1
   num_D_SV_itrs: 1
   SN_eps: 1.e-08
@@ -99,7 +99,7 @@ HFDiscModel:
   resolution: 128
   D_kernel_size: 3
   D_attn: '64'
-  n_class: 81
+  n_class: 117
   num_D_SVs: 1
   num_D_SV_itrs: 1
   SN_eps: 1.e-08
@@ -117,7 +117,7 @@ OcrModel:
   init: 'none'
   dropout: 0.
   # ctc config
-  n_class: 81
+  n_class: 117
   rnn_depth: 0
   bidirectional: False
 
