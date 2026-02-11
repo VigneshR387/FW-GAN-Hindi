@@ -6,6 +6,12 @@ img_height: 128
 char_width: 64
 ckpt: './data/weights/FW-GAN.pth'
 
+hindi_metadata:
+  train: 'dataset/train/metadata.json'
+  val: 'dataset/val/metadata.json'
+  test: 'dataset/test/metadata.json'
+  image_base_dir: 'dataset'
+
 training:
   dset_split: 'trnval'
   epochs: 100
@@ -53,7 +59,7 @@ GenModel:
   G_ch: 64
   style_dim: 128
   bottom_width: 4
-  bottom_height: 4
+  bottom_height: 8
   resolution: 128
   G_kernel_size: 3
   G_attn: '64'
