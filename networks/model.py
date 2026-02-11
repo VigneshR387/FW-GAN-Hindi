@@ -16,7 +16,7 @@ from fid_kid.fid_kid import calculate_kid_fid
 from networks.utils import _info, set_requires_grad, get_scheduler, idx_to_words, words_to_images, rand_clip
 from networks.BigGAN_networks import Generator, Discriminator, HFDiscriminator
 from networks.module import Recognizer, WriterIdentifier, StyleEncoder, SharedBackbone
-from lib.datasets import get_dataset, get_collect_fn, Hdf5Dataset
+from lib.datasets import get_dataset, get_collect_fn, Hdf5Dataset, get_hindi_dataset
 from lib.alphabet import strLabelConverter, get_lexicon, get_true_alphabet, Alphabets
 from lib.utils import draw_image, get_logger, AverageMeterManager, option_to_string, pad
 from networks.rand_dist import prepare_z_dist, prepare_y_dist
@@ -171,29 +171,108 @@ class AdversarialModel(BaseModel):
         self.eval_y = prepare_y_dist(opt.training.eval_batch_size, len(self.lexicon), self.device,
                                      seed=self.opt.seed)
 
-        self.train_loader = DataLoader(
-            get_dataset(opt.dataset, opt.training.dset_split),
-            batch_size=opt.training.batch_size,
-            shuffle=True,
-            collate_fn=self.collect_fn,
-            num_workers=4,
-            drop_last=True
-        )
+                # Dataset Loading - Support both IAM and Hindi datasets
+        if opt.dataset == 'hindi_word':
+            # Load Hindi character mappings
+            import json
+            from torchvision.transforms import Compose, ToTensor, Normalize
 
-        self.tst_loader = DataLoader(
-            get_dataset(opt.dataset, opt.valid.dset_split),
-            batch_size=opt.training.eval_batch_size // 2,
-            shuffle=True,
-            collate_fn=self.collect_fn
-        )
+            print("Loading Hindi character vocabulary...")
+            with open('./data/hindi_char2idx.json', 'r', encoding='utf-8') as f:
+                char2idx = json.load(f)
+            print(f"✓ Vocabulary loaded: {len(char2idx)} characters")
 
-        self.tst_loader2 = DataLoader(
-            get_dataset(opt.dataset, opt.training.dset_split),
-            batch_size=opt.training.eval_batch_size // 2,
-            shuffle=True,
-            collate_fn=self.collect_fn,
-            num_workers=4
-        )
+            # Create transforms (same as IAM)
+            transforms = Compose([ToTensor(), Normalize([0.5], [0.5])])
+
+            # Training dataset
+            print(f"Loading training dataset from: {opt.hindi_metadata['train']}")
+            train_dataset = get_hindi_dataset(
+                metadata_path=opt.hindi_metadata['train'],
+                char2idx=char2idx,
+                image_base_dir=opt.hindi_metadata['image_base_dir'],
+                transforms=transforms
+            )
+
+            # Validation dataset
+            print(f"Loading validation dataset from: {opt.hindi_metadata['val']}")
+            val_dataset = get_hindi_dataset(
+                metadata_path=opt.hindi_metadata['val'],
+                char2idx=char2idx,
+                image_base_dir=opt.hindi_metadata['image_base_dir'],
+                transforms=transforms
+            )
+
+            # Test dataset (for second test loader)
+            test_dataset = get_hindi_dataset(
+                metadata_path=opt.hindi_metadata['test'],
+                char2idx=char2idx,
+                image_base_dir=opt.hindi_metadata['image_base_dir'],
+                transforms=transforms
+            )
+
+            # Update config with actual writer count
+            actual_n_writer = train_dataset.num_writers
+            opt.WidModel.n_writer = actual_n_writer
+            print(f"✓ Updated n_writer in config: {actual_n_writer}")
+
+            # Create dataloaders
+            self.trainloader = DataLoader(
+                train_dataset,
+                batch_size=opt.training.batch_size,
+                shuffle=True,
+                collate_fn=self.collect_fn,
+                num_workers=4,
+                drop_last=True
+            )
+
+            self.tstloader = DataLoader(
+                val_dataset,
+                batch_size=opt.training.eval_batch_size // 2,
+                shuffle=True,
+                collate_fn=self.collect_fn
+            )
+
+            self.tstloader2 = DataLoader(
+                test_dataset,
+                batch_size=opt.training.eval_batch_size // 2,
+                shuffle=True,
+                collate_fn=self.collect_fn,
+                num_workers=4
+            )
+
+            print(f"✓ Hindi dataset loaded:")
+            print(f"  - Train: {len(train_dataset)} samples")
+            print(f"  - Val: {len(val_dataset)} samples")
+            print(f"  - Test: {len(test_dataset)} samples")
+            print(f"  - Writers: {actual_n_writer}")
+
+        else:
+            # Original IAM/other dataset loading
+            self.trainloader = DataLoader(
+                get_dataset(opt.dataset, opt.training.dset_split),
+                batch_size=opt.training.batch_size,
+                shuffle=True,
+                collate_fn=self.collect_fn,
+                num_workers=4,
+                drop_last=True
+            )
+
+            self.tstloader = DataLoader(
+                get_dataset(opt.dataset, opt.valid.dset_split),
+                batch_size=opt.training.eval_batch_size // 2,
+                shuffle=True,
+                collate_fn=self.collect_fn
+            )
+
+            self.tstloader2 = DataLoader(
+                get_dataset(opt.dataset, opt.training.dset_split),
+                batch_size=opt.training.eval_batch_size // 2,
+                shuffle=True,
+                collate_fn=self.collect_fn,
+                num_workers=4
+            )
+
 
         self.optimizers = Munch(
             G=torch.optim.Adam(chain(self.models.G.parameters(), self.models.E.parameters()),
@@ -532,7 +611,25 @@ class AdversarialModel(BaseModel):
         self.set_mode('eval')
         dset_name = self.opt.valid.dset_name if self.opt.valid.dset_name \
                     else self.opt.dataset
-        dset = get_dataset(dset_name, self.opt.valid.dset_split)
+        # Load validation/test dataset
+        if self.opt.dataset == 'hindi_word':
+            import json
+            from torchvision.transforms import Compose, ToTensor, Normalize
+
+            with open('./data/hindi_char2idx.json', 'r', encoding='utf-8') as f:
+                char2idx = json.load(f)
+
+            transforms = Compose([ToTensor(), Normalize([0.5], [0.5])])
+
+            dset = get_hindi_dataset(
+                metadata_path=self.opt.hindi_metadata['test'],
+                char2idx=char2idx,
+                image_base_dir=self.opt.hindi_metadata['image_base_dir'],
+                transforms=transforms
+            )
+        else:
+            dset = get_dataset(dset_name, self.opt.valid.dset_split)
+
         dloader = DataLoader(
             dset,
             collate_fn=self.collect_fn,
@@ -541,8 +638,26 @@ class AdversarialModel(BaseModel):
             num_workers=4
         )
         # style images are resized
-        source_dloader = DataLoader(
-            get_dataset(self.opt.valid.dset_name.strip('_org'), self.opt.valid.dset_split),
+        if self.opt.dataset == 'hindi_word':
+            import json
+            from torchvision.transforms import Compose, ToTensor, Normalize
+
+            with open('./data/hindi_char2idx.json', 'r', encoding='utf-8') as f:
+                char2idx = json.load(f)
+
+            transforms = Compose([ToTensor(), Normalize([0.5], [0.5])])
+
+            source_dset = get_hindi_dataset(
+                metadata_path=self.opt.hindi_metadata['test'],
+                char2idx=char2idx,
+                image_base_dir=self.opt.hindi_metadata['image_base_dir'],
+                transforms=transforms
+            )
+        else:
+            source_dset = get_dataset(self.opt.valid.dset_name.strip('org'), self.opt.valid.dset_split)
+
+        sourcedloader = DataLoader(
+            source_dset,
             collate_fn=self.collect_fn,
             batch_size=self.opt.valid.batch_size,
             shuffle=False,
