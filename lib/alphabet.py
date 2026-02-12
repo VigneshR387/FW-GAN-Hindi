@@ -15,38 +15,55 @@ Alphabets = {
 }
 
 
+def _load_hindi_alphabet():
+    """
+    Build Hindi alphabet string from data/hindi_char2idx.json.
+    Returns a string like '` ' + all_unique_hindi_chars.
+    """
+    import json
+    import os
 
+    json_path = os.path.join('data', 'hindi_char2idx.json')
+    if os.path.exists(json_path):
+        with open(json_path, 'r', encoding='utf-8') as f:
+            char2idx = json.load(f)
+        # Sort by index to keep consistent order
+        chars_sorted = [ch for ch, idx in sorted(char2idx.items(), key=lambda x: x[1])]
+        return '` ' + ''.join(chars_sorted)
+
+    # Fallback
+    raise RuntimeError("Could not find Hindi vocab files in ./data (hindi_char2idx.json).")
 
 class strLabelConverter(object):
     """Convert between str and label.
+
     NOTE:
-        Insert `blank` to the alphabet for CTC.
+    Insert `blank` to the alphabet for CTC.
+
     Args:
         alphabet (str): set of the possible characters.
         ignore_case (bool, default=True): whether or not to ignore all of the case.
     """
 
     def __init__(self, alphabet_key, ignore_case=False):
-        alphabet = Alphabets[alphabet_key]
-        # print(alphabet)
+        # Special handling for Hindi - load from JSON
+        if alphabet_key == 'hindi_word':
+            alphabet = _load_hindi_alphabet()
+        else:
+            alphabet = Alphabets[alphabet_key]
+
         self._ignore_case = ignore_case
         if self._ignore_case:
             alphabet = alphabet.lower()
-        self.alphabet = alphabet
 
+        self.alphabet = alphabet
         self.dict = {}
         for i, char in enumerate(alphabet):
             # NOTE: 0 is reserved for 'blank' required by wrap_ctc
             self.dict[char] = i
 
     def encode(self, text, max_len=None):
-        """Support batch or single str.
-        Args:
-            text (str or list of str): texts to convert.
-        Returns:
-            torch.IntTensor [length_0 + length_1 + ... length_{n - 1}]: encoded texts.
-            torch.IntTensor [n]: length of each text.
-        """
+        """Support batch or single str."""
         if len(text) == 1:
             text = text[0]
 
@@ -58,18 +75,16 @@ class strLabelConverter(object):
             return text
 
         length = []
-        result = []
         results = []
         for item in text:
-            # item = item.decode('utf-8', 'strict')
             length.append(len(item))
-            for char in item:
-                index = self.dict[char]
-                result.append(index)
+            result = [self.dict[char] for char in item]
             results.append(result)
-            result = []
 
-        labels = torch.nn.utils.rnn.pad_sequence([torch.LongTensor(text) for text in results], batch_first=True)
+        labels = torch.nn.utils.rnn.pad_sequence(
+            [torch.LongTensor(text) for text in results],
+            batch_first=True
+        )
         lengths = torch.IntTensor(length)
 
         if max_len is not None and max_len > labels.size(-1):
@@ -80,17 +95,13 @@ class strLabelConverter(object):
         return labels, lengths
 
     def decode(self, t, length=None, raw=True):
-        """Decode encoded texts back into strs.
-        Args:
-            torch.IntTensor [length_0 + length_1 + ... length_{n - 1}]: encoded texts.
-            torch.IntTensor [n]: length of each text.
-        Raises:
-            AssertionError: when the texts and its length does not match.
-        Returns:
-            text (str or list of str): texts to convert.
-        """
+        """Decode encoded texts back into strs."""
+        import numpy as np
+
         def nonzero_count(x):
-            return len(x.nonzero())
+            if isinstance(x, torch.Tensor):
+                return (x != 0).sum().item()
+            return len([i for i in x if i != 0])
 
         if isinstance(t, list):
             t = torch.IntTensor(t)
@@ -98,33 +109,36 @@ class strLabelConverter(object):
         elif length is None:
             length = torch.IntTensor([nonzero_count(t)])
 
-        if length.numel() == 1:
-            length = length[0]
-            assert nonzero_count(t) == length, "{} text with length: {} does not match declared length: {}".\
-                                                format(t, nonzero_count(t), length)
-            if raw:
-                return ''.join([self.alphabet[i] for i in t])
-            else:
-                char_list = []
-                if t.dim() == 2:
-                    t = t[0]
-                for i in range(length):
-                    if t[i] != 0 and (not (i > 0 and t[i - 1] == t[i])):
-                        char_list.append(self.alphabet[t[i]])
-                return ''.join(char_list)
+        # Convert length to int if it's a tensor
+        if isinstance(length, torch.Tensor):
+            if length.numel() == 1:
+                length = length.item()
+
+        # Convert tensor to indexable format
+        if isinstance(t, torch.Tensor):
+            t_array = t.cpu().numpy() if t.is_cuda else t.numpy()
         else:
-            # batch mode
-            assert nonzero_count(t) == length.sum(), "texts with length: {} does not match declared length: {}".\
-                                                      format(nonzero_count(t), length.sum())
-            texts = []
-            index = 0
-            for i in range(length.numel()):
-                l = length[i]
-                texts.append(
-                    self.decode(
-                        t[i, :l], torch.IntTensor([l]), raw=raw))
-                index += l
-            return texts
+            t_array = np.array(t)
+
+        if raw:
+            # Raw mode: decode all characters
+            return ''.join([self.alphabet[int(i)] for i in t_array])
+        else:
+            # Non-raw mode: collapse repeats and remove blanks
+            char_list = []
+
+            if len(t_array.shape) == 2:
+                # 2D tensor - take first row
+                t_array = t_array[0]
+
+            for i in range(int(length)):
+                idx = int(t_array[i])
+                if idx != 0 and (i == 0 or t_array[i - 1] != t_array[i]):
+                    char_list.append(self.alphabet[idx])
+
+            return ''.join(char_list)
+
+
 
 
 def get_true_alphabet(name):
