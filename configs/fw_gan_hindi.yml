@@ -39,7 +39,7 @@ training:
   # Hindi-specific settings
   lexicon: './data/lexicon.txt'
   max_word_len: 25              # Hindi words can be longer
-  n_class: 117                  # Hindi alphabet size
+  n_class: 141                  # Hindi alphabet size
   capitalize_ratio: 0.0         # Hindi has no capitals
   sort_input: false
   num_critic_train: 4
@@ -70,7 +70,7 @@ GenModel:
   resolution: 32          # ← Reverted from 128
   G_kernel_size: 3
   G_attn: '64'
-  n_class: 117            # ← Keep Hindi size
+  n_class: 141            # ← Keep Hindi size
   num_G_SVs: 1
   num_G_SV_itrs: 1
   G_shared: false
@@ -96,7 +96,7 @@ DiscModel:
   resolution: 32          # ← Reverted from 128
   D_kernel_size: 3
   D_attn: '64'
-  n_class: 117            # ← Keep Hindi size
+  n_class: 141            # ← Keep Hindi size
   num_D_SVs: 1
   num_D_SV_itrs: 1
   SN_eps: 0.00000001
@@ -114,7 +114,7 @@ HFDiscModel:
   resolution: 32          # ← Reverted from 128
   D_kernel_size: 3
   D_attn: '64'
-  n_class: 117            # ← Keep Hindi size
+  n_class: 141            # ← Keep Hindi size
   num_D_SVs: 1
   num_D_SV_itrs: 1
   SN_eps: 0.00000001
@@ -132,7 +132,7 @@ OcrModel:
   norm: 'bn'
   init: 'none'
   dropout: 0.0
-  n_class: 117            # ← Keep Hindi size
+  n_class: 141            # ← Keep Hindi size
   rnn_depth: 0
   bidirectional: false
   # max_dim: REMOVED - not in original
