@@ -210,6 +210,14 @@ def G_arch(ch=64, attention='64', ksize='333333', dilation='111111'):
                 'attention': {2 ** i: (2 ** i in [int(item) for item in attention.split('_')])
                                     for i in range(3, 6)},
                 }
+    arch[128] = {'in_channels': [ch * item for item in [16, 8, 4, 2, 1]],
+                 'out_channels': [ch * item for item in [8, 4, 2, 1, 1]],
+                 'upsample': [(2,1), (2,2), (2,2), (2,2), (2,2)],
+                 'resolution': [16, 32, 64, 128, 128],
+                 'attention': {2 ** i: (2 ** i in [int(item) for item in attention.split('_')])
+                                     for i in range(4, 9)},
+                 }
+
 
     return arch
 
@@ -509,6 +517,13 @@ def D_arch(ch=64, attention='64', input_nc=3, ksize='333333', dilation='111111')
                  'resolution': [8, 4, 4, 4],
                  'attention': {2 ** i: 2 ** i in [int(item) for item in attention.split('_')]
                                for i in range(2, 5)}}
+    arch[128] = {'in_channels': [input_nc] + [ch * item for item in [1, 2, 4, 8, 16, 16]],
+                 'out_channels': [item * ch for item in [1, 2, 4, 8, 16, 16, 16]],
+                 'downsample': [True] * 6 + [False],
+                 'resolution': [64, 32, 16, 8, 4, 4, 4],
+                 'attention': {2 ** i: 2 ** i in [int(item) for item in attention.split('_')]
+                               for i in range(2, 9)}}
+
     return arch
 
 
