@@ -438,8 +438,7 @@ class AdversarialModel(BaseModel):
                     recn_wid_logits = self.models.W(style_imgs, style_img_lens, self.models.S)
                     fake_wid_loss = self.classify_loss(recn_wid_logits, real_wids)
 
-                    ### FDL Loss ###
-                    fdl_loss = self.fdl_loss_fn(real_imgs, recn_imgs)
+
 
                     ### KL-Divergence Loss ###
                     kl_loss = KLloss(enc_mu, enc_logvar)
