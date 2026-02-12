@@ -299,7 +299,7 @@ class AdversarialModel(BaseModel):
         best_kid = np.inf
         iter_count = 0
         for epoch in range(epoch_done, self.opt.training.epochs):
-            for i, (imgs, img_lens, lbs, lb_lens, wids) in enumerate(self.train_loader):
+            for i, (imgs, img_lens, lbs, lb_lens, wids) in enumerate(self.trainloader):
                 #############################
                 # Prepare inputs & Network Forward
                 #############################
