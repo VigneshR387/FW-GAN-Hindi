@@ -2,3 +2,6 @@ dataset/train
 dataset/test
 dataset/val
 venv
+dataset_32px/train
+dataset_32px/test
+dataset_32px/val
