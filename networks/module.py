@@ -14,7 +14,7 @@ class SharedBackbone(nn.Module):
             '16': "feat4",
         }
         
-        nf = 32  # Fixed: use consistent initial channels
+        nf = resolution
         layers = []
         
         # Initial conv
@@ -206,7 +206,7 @@ class Recognizer(nn.Module):
         ######################################
         # Construct Backbone
         ######################################
-        nf = 32  # Fixed: use consistent initial channels
+        nf = resolution
         cnn_f = [nn.ConstantPad2d(2, -1),
                  Conv2dBlock(in_channel, nf, 5, 1, 0,
                              norm='none',
