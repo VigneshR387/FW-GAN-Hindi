@@ -556,7 +556,7 @@ class AdversarialModel(BaseModel):
 
         device = self.device
         batchA = next(iter(self.tstloader))
-        batchB = next(iter(self.tst_loader2))
+        batchB = next(iter(self.tstloader2))
         batch = Hdf5Dataset.merge_batch(batchA, batchB, device)
         imgs, img_lens, lbs, lb_lens, wids = batch
 
