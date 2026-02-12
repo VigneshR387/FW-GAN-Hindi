@@ -5,13 +5,15 @@ import torch
 Alphabets = {
     #'!#&():;?*%'
     'all': '` ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\'-"/,.+_!#&():;?*',
-    'iam_word': '` ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\'-"/,.+_!#&():;?*', 
-    'iam_line': '` ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\'-"/,.+_!#&():;?', 
-    'cvl_word': '` ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\'-"/,.+_!#&():;?', 
+    'iam_word': '` ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\'-"/,.+_!#&():;?*',
+    'iam_line': '` ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\'-"/,.+_!#&():;?',
+    'cvl_word': '` ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\'-"/,.+_!#&():;?',
     'custom': '` ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\'-"/,.+_!#&():;?',
     # 'cvl_word': '` ABDEFGHILNPRSTUVWYZabcdefghiklmnopqrstuvwxyz\'-_159', # n_class: 52
-    'rimes_word': '` ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%\'-/Éàâçèéêëîïôùû' 
+    'rimes_word': '` ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%\'-/Éàâçèéêëîïôùû',
+    'hindi_word': '',  # Hindi uses JSON vocabulary file instead
 }
+
 
 
 
@@ -126,28 +128,76 @@ class strLabelConverter(object):
 
 
 def get_true_alphabet(name):
+    """
+    Get alphabet for dataset.
+    For Hindi, loads characters dynamically from vocabulary file.
+    """
     tag = '_'.join(name.split('_')[:2])
+
+    if tag == 'hindi_word':
+        # Load Hindi alphabet from vocabulary JSON
+        import json
+        try:
+            vocab_path = './data/hindi_char2idx.json'
+            with open(vocab_path, 'r', encoding='utf-8') as f:
+                char2idx = json.load(f)
+
+            # Extract actual characters (exclude special tokens)
+            special_tokens = {'<PAD>', '<SOS>', '<EOS>', '<UNK>', '<BLANK>'}
+            chars = [ch for ch in char2idx.keys() if ch not in special_tokens]
+            alphabet = ''.join(sorted(chars))
+
+            print(f"✓ Loaded Hindi alphabet: {len(chars)} characters")
+            return alphabet
+        except FileNotFoundError:
+            print(f"Warning: {vocab_path} not found, returning empty alphabet")
+            return ''
+        except Exception as e:
+            print(f"Error loading Hindi alphabet: {e}")
+            return ''
+
+    # For other datasets, use predefined alphabets
     return Alphabets[tag]
 
 
+
 def get_lexicon(path, true_alphabet, max_length=20, ignore_case=True):
+    """
+    Load lexicon from file.
+    For Hindi, skip alphabet filtering since JSON vocab handles it.
+    """
     words = []
     try:
         with open(path, 'r', encoding='utf-8') as f:
             for line in f.readlines():
                 line = line.strip()
-                if len(line) < 2:
+                if len(line) < 1:  # Changed from < 2 for Hindi single-char words
                     continue
 
-                word = ''.join(ch for ch in line if ch in true_alphabet)
-                if len(word) != len(line) or len(word) >= max_length:
+                # For Hindi, skip alphabet filtering if true_alphabet is empty
+                if true_alphabet == '':
+                    # Hindi mode: accept all characters from file
+                    word = line
+                else:
+                    # Original mode: filter by alphabet
+                    word = ''.join(ch for ch in line if ch in true_alphabet)
+                    if len(word) != len(line):
+                        continue
+
+                if len(word) >= max_length:
                     continue
-                if ignore_case:
+
+                # Only lowercase for Latin scripts
+                if ignore_case and true_alphabet and ord(true_alphabet[0]) < 256:
                     word = word.lower()
+
                 words.append(word)
+
+        print(f"✓ Loaded lexicon: {len(words)} words from {path}")
     except FileNotFoundError as e:
-        print(e)
+        print(f"Error loading lexicon: {e}")
     return words
+
 
 
 def word_capitalize(word):
