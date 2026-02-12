@@ -109,34 +109,53 @@ class strLabelConverter(object):
         elif length is None:
             length = torch.IntTensor([nonzero_count(t)])
 
-        # Convert length to int if it's a tensor
-        if isinstance(length, torch.Tensor):
-            if length.numel() == 1:
-                length = length.item()
-
-        # Convert tensor to indexable format
+        # Convert tensor to numpy array
         if isinstance(t, torch.Tensor):
             t_array = t.cpu().numpy() if t.is_cuda else t.numpy()
         else:
             t_array = np.array(t)
 
-        if raw:
-            # Raw mode: decode all characters
-            return ''.join([self.alphabet[int(i)] for i in t_array])
+        # Handle batch dimension
+        if len(t_array.shape) == 2:
+            # Batch mode: decode multiple sequences
+            if isinstance(length, torch.Tensor):
+                length = length.cpu().numpy() if length.is_cuda else length.numpy()
+            elif not isinstance(length, (list, np.ndarray)):
+                length = [length] * len(t_array)
+
+            texts = []
+            for i in range(len(t_array)):
+                seq = t_array[i]
+                seq_len = int(length[i]) if i < len(length) else len(seq)
+
+                if raw:
+                    text = ''.join([self.alphabet[int(idx)] for idx in seq[:seq_len]])
+                else:
+                    char_list = []
+                    for j in range(seq_len):
+                        idx = int(seq[j])
+                        if idx != 0 and (j == 0 or seq[j-1] != seq[j]):
+                            char_list.append(self.alphabet[idx])
+                    text = ''.join(char_list)
+                texts.append(text)
+
+            return texts
+
         else:
-            # Non-raw mode: collapse repeats and remove blanks
-            char_list = []
+            # Single sequence
+            if isinstance(length, torch.Tensor) and length.numel() == 1:
+                length = length.item()
 
-            if len(t_array.shape) == 2:
-                # 2D tensor - take first row
-                t_array = t_array[0]
+            if raw:
+                return ''.join([self.alphabet[int(i)] for i in t_array])
+            else:
+                char_list = []
+                for i in range(int(length)):
+                    idx = int(t_array[i])
+                    if idx != 0 and (i == 0 or t_array[i - 1] != t_array[i]):
+                        char_list.append(self.alphabet[idx])
+                return ''.join(char_list)
 
-            for i in range(int(length)):
-                idx = int(t_array[i])
-                if idx != 0 and (i == 0 or t_array[i - 1] != t_array[i]):
-                    char_list.append(self.alphabet[idx])
-
-            return ''.join(char_list)
 
 
 
