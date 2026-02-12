@@ -35,9 +35,16 @@ class BaseModel(object):
         self.log_root = log_root
         self.logger = None
         self.writer = None
-        alphabet_key = 'rimes_word' if opt.dataset.startswith('rimes') else 'all'
-        self.alphabet = Alphabets[alphabet_key]
+        if opt.dataset.startswith('hindi'):
+            alphabet_key = 'hindi_word'
+        elif opt.dataset.startswith('rimes'):
+            alphabet_key = 'rimes_word'
+        else:
+            alphabet_key = 'all'
+
+        self.alphabet = Alphabets.get(alphabet_key, Alphabets['all'])
         self.label_converter = strLabelConverter(alphabet_key)
+
         self.collect_fn = get_collect_fn(opt.training.sort_input)
 
     def print(self, info):
