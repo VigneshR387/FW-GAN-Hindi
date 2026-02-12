@@ -553,21 +553,10 @@ class AdversarialModel(BaseModel):
 
     def sample_images(self, iteration_done=0):
         self.set_mode('eval')
+
         device = self.device
-
-        try:
-            batchA = next(iter(self.tst_loader))
-        except StopIteration:
-            # Reset iterator if exhausted
-            self.tst_loader_iter = iter(self.tst_loader)
-            batchA = next(self.tst_loader_iter)
-
-        try:
-            batchB = next(iter(self.tst_loader2))
-        except StopIteration:
-            self.tst_loader2_iter = iter(self.tst_loader2)
-            batchB = next(self.tst_loader2_iter)
-
+        batchA = next(iter(self.tstloader))
+        batchB = next(iter(self.tst_loader2))
         batch = Hdf5Dataset.merge_batch(batchA, batchB, device)
         imgs, img_lens, lbs, lb_lens, wids = batch
 
