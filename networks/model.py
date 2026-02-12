@@ -504,7 +504,7 @@ class AdversarialModel(BaseModel):
                             "HF-fake:%.4f HF-real:%.4f CTC-fake:%.4f CTC-real:%.4f " \
                            "Wid-fake:%.4f Wid-real:%.4f Recn-z:%.4f FDL:%.4f Kl:%.4f" \
                            % (epoch, self.opt.training.epochs,
-                              iter_count % len(self.train_loader), len(self.train_loader),
+                              iter_count % len(self.trainloader), len(self.trainloader),
                               meter_vals['adv_loss'], meter_vals['adv_loss_hf'],
                               meter_vals['fake_disc_loss'], meter_vals['real_disc_loss'],
                               meter_vals['hf_fake_disc_loss'], meter_vals['hf_real_disc_loss'],
