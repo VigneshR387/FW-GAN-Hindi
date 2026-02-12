@@ -462,22 +462,41 @@ class AdversarialModel(BaseModel):
                     self.averager_meters.update('gp_wid', gp_wid.item())
                     # self.averager_meters.update('gp_fdl', gp_fdl.item())
 
-                    g_loss = (2 * adv_loss + adv_loss_hf +
-                              gp_ctc * fake_ctc_loss +
-                              gp_info * info_loss +
-                              gp_wid * fake_wid_loss +
-                              fdl_loss +
-                              self.opt.training.lambda_kl * kl_loss)
+                    # --- Combine generator losses, gating FDL by lambda_fdl ---
+                    lambda_fdl = getattr(self.opt.training, 'lambda_fdl', 0.0)
+
+                    if lambda_fdl > 0:
+                        gloss = (
+                            2 * adv_loss
+                            + adv_loss_hf
+                            + gp_ctc * fake_ctc_loss
+                            + gp_info * info_loss
+                            + gp_wid * fake_wid_loss
+                            + lambda_fdl * fdl_loss
+                            + self.opt.training.lambda_kl * kl_loss
+                        )
+                    else:
+                        # Do not include FDL loss if lambda_fdl == 0
+                        gloss = (
+                            2 * adv_loss
+                            + adv_loss_hf
+                            + gp_ctc * fake_ctc_loss
+                            + gp_info * info_loss
+                            + gp_wid * fake_wid_loss
+                            + self.opt.training.lambda_kl * kl_loss
+                        )
                     
-                    g_loss.backward()
+
+                    gloss.backward()
+
                     self.averager_meters.update('adv_loss', adv_loss.item())
                     self.averager_meters.update('adv_loss_hf', adv_loss_hf.item())
                     self.averager_meters.update('fake_ctc_loss', fake_ctc_loss.item())
                     self.averager_meters.update('info_loss', info_loss.item())
                     self.averager_meters.update('fake_wid_loss', fake_wid_loss.item())
-                    self.averager_meters.update('fdl_loss', fdl_loss.item())
                     self.averager_meters.update('kl_loss', kl_loss.item())
-                    self.optimizers.G.step()
+                    if lambda_fdl > 0:
+                        self.averager_meters.update('fdl_loss', fdl_loss.item())
 
                 if iter_count % self.opt.training.print_iter_val == 0:
                     meter_vals = self.averager_meters.eval_all()
